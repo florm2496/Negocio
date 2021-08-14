@@ -12,5 +12,5 @@ class Clientes(models.Model):
 
     def __str__(self):
         
-        return self.nombre
+        return '{} {} {}'.format(self.nombre,self.apellido,self.dni)
     

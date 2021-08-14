@@ -15,7 +15,11 @@ SECRET_KEY = 'django-insecure-c8^onvm@+^p*wqe$(&qqpfp1q2n$m^rgvcn*d%6=e99d@b2(i4
 
 
 # Application definition
-
+THRIDY_APPS=[
+    'rest_framework',
+    'corsheaders',
+    
+]
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -23,13 +27,14 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'rest_framework',
     'applications.clientes',
     'applications.cuentas',
-
-]
+    'applications.base',
+    
+] + THRIDY_APPS 
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -92,3 +97,9 @@ USE_TZ = True
 
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+REST_FRAMEWORK={
+    'DEFAULT_AUTHENTICATION_CLASSES':(
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    )
+}

@@ -3,17 +3,15 @@ from .base import *
 
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
-
-
-
+APPEND_SLASH=False
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'negocio',
-        'USER':'julian',
-        'PASSWORD':'41060109',
+        'USER':'florm2496',
+        'PASSWORD':'pan1994245',
         'HOST': '127.0.0.1',
         'PORT':'5432',
 
