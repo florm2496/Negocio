@@ -5,7 +5,9 @@ from . import views as cuentas_views
 
 
 router = DefaultRouter()
-router.register(r'inicio', cuentas_views.cuentasViewSet, basename='cuentas')
+router.register(r'', cuentas_views.cuentasViewSet, basename='cuentas')
+
 urlpatterns = [
-    path('', include(router.urls))
+    path('lista', include(router.urls)),
+    path('nuevacuenta', cuentas_views.NuevaCuenta.as_view(),name="nueva_cuenta"),
 ]   
