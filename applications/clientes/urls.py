@@ -8,6 +8,6 @@ from . import views as clientes_views
 router = DefaultRouter()
 router.register(r'', clientes_views.clientesViewSet, basename='clientes')
 urlpatterns = [
-    path('clientes/', include(router.urls)),
+    path('', include(router.urls)),
     
 ]   

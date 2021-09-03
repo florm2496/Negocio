@@ -10,4 +10,6 @@ router.register(r'', cuentas_views.cuentasViewSet, basename='cuentas')
 urlpatterns = [
     path('lista', include(router.urls)),
     path('nuevacuenta', cuentas_views.NuevaCuenta.as_view(),name="nueva_cuenta"),
+    path('cuentascliente', cuentas_views.CuentasByCliente.as_view(),name="cuentascliente"),
+    
 ]   

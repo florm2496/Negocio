@@ -30,6 +30,7 @@ INSTALLED_APPS = [
     'applications.clientes',
     'applications.cuentas',
     'applications.base',
+    'applications.productos',
     
 ] + THRIDY_APPS 
 

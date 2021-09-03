@@ -1,37 +1,31 @@
 from rest_framework import serializers
-from .models import Cuentas, Cuotas, Pagos
-
+from .models import Cuentas
+from applications.clientes.serializers import clientesSerializer
 
 class cuentasSerializer(serializers.ModelSerializer):
+    cliente_nombre = serializers.SerializerMethodField()
+    cliente_dni = serializers.SerializerMethodField()
     class Meta:
         model=Cuentas
-        fields='__all__'
+        fields=('importe','fecha','cliente','cliente_nombre','cliente_dni','garante','numero_cuenta','estado')
+
+    def get_cliente_nombre(self,obj):
+        return obj.cliente.nombre
+
+    def get_cliente_dni(self,obj):
+        return obj.cliente.dni
+
 
 class NuevaCuentaSerializer(serializers.Serializer):
-    id_cliente=serializers.CharField(required=True)
+    dni=serializers.CharField(required=True)
     garante=serializers.CharField(required=True)
     importe=serializers.FloatField(required=True)
-    numero_cuenta=serializers.FloatField(required=True)
+    numero_cuenta=serializers.IntegerField(required=True)
     cant_cuotas=serializers.IntegerField(required=True)
-    saldo=serializers.FloatField(required=True)
-    productos=serializers.CharField(required=True)
-    dia_inicio= serializers.IntegerField(required=True)
-    dia_venc= serializers.IntegerField(required=True)
+    #saldo=serializers.FloatField(required=False)
+    #productos=serializers.CharField(required=True)
+    dia_inicio= serializers.DateField(required=True)
+    dia_venc= serializers.DateField(required=True)
     importe_cuota = serializers.FloatField(required=True)
+    #productos=serializers.Ma
 
-    """
-    cliente= models.ForeignKey(Clientes, on_delete=models.CASCADE)
-    garante= models.CharField(max_length=50, verbose_name="Garante")
-    importe= models.FloatField(verbose_name="Importe")
-    fecha= models.DateTimeField(verbose_name="Fecha", auto_now=False, auto_now_add=False)
-    numero_cuenta= models.CharField(max_length=30,verbose_name="Numero de cuenta")
-    saldo = models.FloatField(verbose_name="Saldo")
-    productos = models.CharField(max_length=200, verbose_name="Productos")
-    estado = models.CharField(verbose_name='Estado',max_length=20)
-    """
-   
-
-class pagosSerializer(serializers.ModelSerializer):
-    class Meta:
-        model=Pagos
-        fields='__all__'
