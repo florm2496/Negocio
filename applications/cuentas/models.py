@@ -4,42 +4,74 @@ from applications.productos.models import Productos
 
 # Create your models here.
 
-
+metodos=[
+    ('contado','contado'),
+    ('tarjeta','tarjeta'),
+]
+estado=[
+    ('activa','activa'),
+    ('morosa','morosa'),
+    ('inactiva','inactiva'),
+    ('saldada','saldada'),
+]
 class Cuentas(models.Model):
-    cliente= models.ForeignKey(Clientes, on_delete=models.CASCADE)
-    garante= models.CharField(max_length=50, verbose_name="Garante")
-    importe= models.FloatField(verbose_name="Importe")
-    fecha= models.DateField(verbose_name="Fecha")
+    solicitante= models.ForeignKey(Clientes, on_delete=models.CASCADE ,related_name='solicitante',default=None)
+    garante = models.ForeignKey(Clientes, on_delete=models.CASCADE , related_name='garante')
+    importe = models.FloatField(verbose_name="Total de la venta")
+    fecha = models.DateField(verbose_name="Fecha y hora de la venta")
     numero_cuenta= models.CharField(max_length=30,verbose_name="Numero de cuenta")
     saldo = models.FloatField(verbose_name="Saldo",default=0)
-    #productos = models.CharField(max_length=200, verbose_name="Productos")
-    estado = models.CharField(verbose_name='Estado',max_length=20, default="activa")
+    estado = models.CharField(verbose_name='Estado',max_length=20,choices=estado, default="activa")
+    baja = models.BooleanField(default=False)  # este campo es para dar de baja la cuenta
+    anticipo=models.FloatField(default=0)
+    metodo_pago=models.CharField(choices=metodos,max_length=20,default="contado")
     
     def __str__(self):
-        return '{} {}'.format(self.id,self.cliente)
+        return '{}'.format(self.numero_cuenta)
 
 
-class DetalleCuenta():
-    #cuenta = models.ForeignKey(Cuentas, on_delete=models.CASCADE)
+class DetalleCuenta(models.Model):
+    cuenta = models.ForeignKey(Cuentas, on_delete=models.CASCADE)
     producto = models.ForeignKey(Productos, on_delete=models.CASCADE)
     subtotal = models.FloatField()
+    descuento = models.FloatField(default=0)
     cantidad = models.IntegerField()
 
     def __str__(self):
-        return str(self.subtotal) + self.producto.nombre
+        return str(self.subtotal) + str(self.cuenta.id)
 
-    
+estado_cuota=[
+    ('impaga','impaga'),
+    ('pagada','pagada'),
+    ('morosa','morosa'),
+] 
 class Cuotas(models.Model):
     cuenta=models.ForeignKey(Cuentas,on_delete=models.CASCADE)
     numero_cuota=models.IntegerField(verbose_name="Numero de cuota",default=0)
     importe=models.FloatField(verbose_name="importe")
-    saldo=models.FloatField(verbose_name="importe")
-    fecha_inicio=models.DateField()
-    fecha_vencimiento=models.DateField()
-    estado = models.CharField(max_length=20,verbose_name='Estado', default="impaga")
+    saldo=models.FloatField(verbose_name="saldo")
+    fecha_vencimiento=models.DateTimeField()
+    estado = models.CharField(max_length=20,verbose_name='Estado de la cuota',choices=estado_cuota, default="impaga")
+    vencida = models.BooleanField(default=False)
     recargo=models.FloatField(default=0)
     descuento=models.FloatField(default=0)
-    productos = models.ManyToManyField(Productos,blank=True,null=True)
     
+    class Meta:
+        ordering= ('numero_cuota',)
+
     def __str__(self):
-        return 'Cuota {} , cuenta {}'.format(self.numero_cuota,self.cuenta)
+        return '{}'.format(self.numero_cuota)
+
+    
+
+
+class Pagos(models.Model):
+    cuota = models.ForeignKey(Cuotas, on_delete=models.CASCADE)
+    importe = models.FloatField()
+    fecha = models.DateField(auto_now_add=True)
+    metodo_pago=models.CharField(choices=metodos,max_length=20,default="contado")
+
+    #def save(self, *args, **kwargs):
+
+    def __str__(self):
+        return str(self.cuota.id) + str(self.importe)

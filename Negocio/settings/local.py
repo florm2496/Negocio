@@ -9,7 +9,7 @@ APPEND_SLASH=False
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'prueba_negocio',
+        'NAME': 'negocio2',
         'USER':'postgres',
         'PASSWORD':'pan1994245',
         'HOST': '127.0.0.1',

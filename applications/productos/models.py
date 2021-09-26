@@ -6,16 +6,17 @@ from django.db.models.fields import BooleanField
 
 class Productos(models.Model):
     rubro = [
-        ('ELECTRODOMESTICOS', 'Electrodomesticos'),
-        ('INDUMENTARIA', 'Indumentaria'),
-        ('BAZAR', 'Bazar'),
-        ('REGALERIA', 'Regaleria'),
+        ('ELECTRODOMESTICOS', 'ELECTRODOMESTICOS'),
+        ('INDUMENTARIA', 'INDUMENTARIA'),
+        ('BAZAR', 'BAZAR'),
+        ('REGALERIA', 'REGALERIA'),
    
     ]
 
     nombre = models.CharField(max_length=50)
     codigo = models.IntegerField()
-    stock  = models.IntegerField()
+    codigo_ref = models.CharField(default="A" , max_length=10)
+    stock  = models.IntegerField(default=0)
     precio = models.FloatField()
     tipo = models.CharField(choices=rubro,max_length=30)
     estado=models.BooleanField(default=True)

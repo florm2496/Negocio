@@ -1,29 +1,58 @@
 import datetime as dt
+import pytz
+utc=pytz.UTC
+
+from applications.cuentas.models import Cuentas,Cuotas
+
+def update_dues(listacuentas):
+    for c in listacuentas:
+        cuotas = Cuotas.objects.filter(cuenta__numero_cuenta=c.numero_cuenta,vencida=False)
+        for i in cuotas:
+            venc=i.fecha_vencimiento
+            if venc <=  utc.localize(dt.datetime.now()):
+                i.vencida = True
+            
+                """inicialmente , el saldo sera igual al importe de la cuota , cada vez que se efectue 
+                  un pago se descontara del saldo, y si la cuota vence y no esta saldada se aplicara un 
+                  recargo al saldo
+                
+                """
+                if i.estado == 'impaga':
+                    i.recargo = i.saldo * 0.20
+                    #i.saldo = i.saldo + i.recargo 
+                i.save()
+
+def get_cuentas(listacuentas,cuenta):
+    update_dues(listacuentas)
+    if cuenta is None:
+        cuentas=Cuentas.objects.all()
+    else:
+        cuentas=Cuentas.objects.get(numero_cuenta=cuenta)
+    return cuentas
 
 
-def generarfechas(fecha_inicio,fecha_venci,cuotas):
-    fechas_inicio=[]
+def generar_fechas(fecha_venci,cuotas):
     fechas_venc=[]
-    
+
+    inicio=dt.datetime(fecha_venci.year,fecha_venci.month,1,23,59,59)
     #ahora=dt.datetime.today()
     for c in range(cuotas):
 
         if c!=0:
-            inicio=inicio + dt.timedelta(30)
+            fecha = inicio + dt.timedelta(30)
         else:
-            inicio= fecha_inicio
+            fecha = inicio
+  
+        fechas_venc.append(fecha)
+        inicio=fecha
+        
+        
+        
+    return fechas_venc
 
-
+def actualizarstock(productos,cantidades):
+    
+    for p,c in zip(productos,cantidades):
         
-        mes=inicio.month
-        año=inicio.year
-        dia=inicio.day
-        fecha=dt.datetime(año,mes,dia)
-        fechas_inicio.append(fecha)
-        fecha_venc=dt.datetime(año,mes,fecha_venci.day)
-        fechas_venc.append(fecha_venc)
-        
-        
-        
-    return fechas_inicio,fechas_venc
-        
+        p.stock = p.stock - c
+        p.save()        

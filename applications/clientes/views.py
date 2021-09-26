@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from rest_framework import viewsets , permissions
 from rest_framework.response import Response
-from rest_framework.decorators import action
+
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       
 from .models import Clientes
 from .serializers import clientesSerializer
@@ -13,9 +13,9 @@ class clientesViewSet(viewsets.ModelViewSet):
     serializer_class = clientesSerializer
 
     def get_queryset(self):
-        print('entre en el motodo')
+        
         dni=self.request.query_params.get('dni',None)
-        print(dni)
+        
         clientes=Clientes.objects.all()
         if dni is None:
             objs=clientes
