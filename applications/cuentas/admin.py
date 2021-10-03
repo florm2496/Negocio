@@ -14,7 +14,7 @@ class DetalleCuentaAdmin(admin.ModelAdmin):
     list_display=('cuenta', 'producto','cantidad','descuento','subtotal')
 
 class CuotasAdmin(admin.ModelAdmin):
-    list_display=('cuenta','numero_cuota','id','fecha_vencimiento','estado','cuenta')
+    list_display=('cuenta','importe','numero_cuota','id','fecha_vencimiento','estado','cuenta')
 
 admin.site.register(Cuentas,CuentaAdmin)
 admin.site.register(Cuotas,CuotasAdmin)

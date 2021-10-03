@@ -7,20 +7,30 @@ from applications.cuentas.models import Cuentas,Cuotas
 def update_dues(listacuentas):
     for c in listacuentas:
         cuotas = Cuotas.objects.filter(cuenta__numero_cuenta=c.numero_cuenta,vencida=False)
-        for i in cuotas:
-            venc=i.fecha_vencimiento
-            if venc <=  utc.localize(dt.datetime.now()):
-                i.vencida = True
-            
-                """inicialmente , el saldo sera igual al importe de la cuota , cada vez que se efectue 
-                  un pago se descontara del saldo, y si la cuota vence y no esta saldada se aplicara un 
-                  recargo al saldo
+        cuotas_impagas=Cuotas.objects.filter(cuenta__numero_cuenta=c.numero_cuenta,estado='impaga')
+        if cuotas_impagas.count() > 0:
+             for cuota in cuotas:
+
+                venc=cuota.fecha_vencimiento
+                if venc <=  utc.localize(dt.datetime.now()):
+                    cuota.vencida = True
                 
-                """
-                if i.estado == 'impaga':
-                    i.recargo = i.saldo * 0.20
-                    #i.saldo = i.saldo + i.recargo 
-                i.save()
+                    """inicialmente , el saldo sera igual al importe de la cuota , cada vez que se efectue 
+                    un pago se descontara del saldo, y si la cuota vence y no esta saldada se aplicara un 
+                    recargo al saldo
+                    
+                    """
+                    if cuota.estado == 'impaga':
+                        cuota.recargo = cuota.saldo * 0.20
+                        #i.saldo = i.saldo + i.recargo 
+                    cuota.save()
+        
+        else:
+            c.estado='pagada'
+            c.save()
+
+
+           
 
 def get_cuentas(listacuentas,cuenta):
     update_dues(listacuentas)

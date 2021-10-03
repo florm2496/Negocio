@@ -45,14 +45,8 @@ class NuevoPago(APIView):
         )
         nuevo_pago.save()
 
+
         
-        saldo_cuota=cuota.importe - nuevo_pago.importe
-        cuota.saldo = saldo_cuota
-
-        if saldo_cuota <= 0:
-            cuota.estado = 'pagada'
-
-        cuota.save()
 
 
         pago_serializado=PagosSerializer(nuevo_pago)
@@ -131,7 +125,8 @@ class RegistrarCuenta(CreateAPIView):
         datos=serializer.validated_data
         #extraer datos para la cuenta
         solicitante_dni=datos['solicitante']
-        importe_cuota=datos['importe']
+        importe_cuenta=datos['importe']
+        importe_cuota=datos['importe_cuota']
         garante_dni=datos['garante']
         cant_cuotas=datos['cant_cuotas']
         num_cuenta=datos['num_cuenta']
@@ -150,7 +145,7 @@ class RegistrarCuenta(CreateAPIView):
         cuenta=Cuentas(
             solicitante=solicitante,
             garante= garante,
-            importe= importe_cuota,
+            importe= importe_cuenta,
             fecha= timezone.now(),
             numero_cuenta= num_cuenta,
             metodo_pago=metodo_pago,
@@ -249,7 +244,7 @@ class NuevaCuenta(APIView):
         
         lista_cuotas=[]
         
-        fechas_venc=generarfechas(dia_venc,cuotas)
+        fechas_venc=generar_fechas(dia_venc,cuotas)
         i=1
 
         for c in range(cuotas):

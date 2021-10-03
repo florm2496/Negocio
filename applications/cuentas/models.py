@@ -1,4 +1,8 @@
 from django.db import models
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+
+
 from applications.clientes.models import Clientes
 from applications.productos.models import Productos
 
@@ -12,7 +16,7 @@ estado=[
     ('activa','activa'),
     ('morosa','morosa'),
     ('inactiva','inactiva'),
-    ('saldada','saldada'),
+    ('pagada','pagada'),
 ]
 class Cuentas(models.Model):
     solicitante= models.ForeignKey(Clientes, on_delete=models.CASCADE ,related_name='solicitante',default=None)
@@ -74,4 +78,40 @@ class Pagos(models.Model):
     #def save(self, *args, **kwargs):
 
     def __str__(self):
-        return str(self.cuota.id) + str(self.importe)
+        return str(self.cuota.id) + '-' + str(self.importe)
+
+
+
+
+@receiver(post_save, sender=Pagos)
+def actualizar_cuenta(instance, **kwargs):
+    cuota_id=instance.cuota.id
+    importe_pago=instance.importe
+    cuenta_id=instance.cuota.cuenta.id
+    cuenta=Cuentas.objects.get(pk=cuenta_id)
+
+    cuota=Cuotas.objects.get(pk=cuota_id)
+    cuota.saldo -=  importe_pago
+
+
+
+    if cuota.saldo <= 0:
+        cuota.estado = 'pagada'
+    
+    cuota.save()
+
+    total_pagado = Pagos.objects.filter(cuota__cuenta__numero_cuenta=0).aggregate(suma=models.Sum('importe'))['suma']
+    if total_pagado is None:
+        total_pagado=0
+
+    
+    cuenta.saldo -= float(total_pagado)
+
+    if cuenta.saldo <= 0:
+        cuenta.estado = 'pagada'
+
+    cuenta.save()
+
+    
+
+

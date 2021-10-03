@@ -1,6 +1,7 @@
 from django.db import models
 from django.db.models.enums import Choices
 from django.db.models.fields import BooleanField
+from django.db.models.fields.related import ForeignKey
 
 
 
@@ -31,4 +32,23 @@ class Productos(models.Model):
         return self.nombre
 
 
+
+
+class Ingresos(models.Model):
+    fecha=models.DateField()
+    total=models.FloatField()
+    observacion=models.CharField(max_length=100)
+
+
+    def __str_(self):
+        return self.id
+
+class DetalleIngreso(models.Model):
+    ingreso=models.ForeignKey(Ingresos ,null=True, on_delete=models.SET_NULL)
+    producto=models.ForeignKey(Productos,on_delete=models.CASCADE)
+    cantidad=models.FloatField()
+    subtotal=models.FloatField()
+
+    def __str_(self):
+        return '{} {}'.format(self.ingreso , self.producto)
 
