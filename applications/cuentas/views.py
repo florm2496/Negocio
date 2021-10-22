@@ -16,7 +16,8 @@ from applications.cuentas import serializers
 from django.db.models import Max
 from applications.productos.models import Productos
 from django.utils import timezone
-from .functions import generar_fechas , get_cuentas , update_dues,actualizarstock
+from .functions import generar_fechas , get_cuentas , update_dues
+from applications.productos.functions import actualizar_stock
 from rest_framework import status
 # Create your views here.
 
@@ -184,7 +185,7 @@ class RegistrarCuenta(CreateAPIView):
         #crear los detalles 
         DetalleCuenta.objects.bulk_create(detalles)
 
-        actualizarstock(productos,cants)
+        actualizar_stock(productos,cants,'ventas')
         #crear cuotas
         Cuotas.objects.bulk_create(lista_cuotas)
         

@@ -1,7 +1,5 @@
 from django.db import models
-from django.db.models.enums import Choices
-from django.db.models.fields import BooleanField
-from django.db.models.fields.related import ForeignKey
+
 
 
 
@@ -23,7 +21,6 @@ class Productos(models.Model):
     estado=models.BooleanField(default=True)
 
     class Meta:
-        
 
         verbose_name = 'Producto'
         verbose_name_plural = 'Productos'
@@ -35,20 +32,22 @@ class Productos(models.Model):
 
 
 class Ingresos(models.Model):
+    numero=models.IntegerField(default=0)
     fecha=models.DateField()
     total=models.FloatField()
     observacion=models.CharField(max_length=100)
 
 
-    def __str_(self):
-        return self.id
+    def __str__(self):
+        return str(self.id)
 
 class DetalleIngreso(models.Model):
+    numero=models.IntegerField(default=0)
     ingreso=models.ForeignKey(Ingresos ,null=True, on_delete=models.SET_NULL)
     producto=models.ForeignKey(Productos,on_delete=models.CASCADE)
     cantidad=models.FloatField()
     subtotal=models.FloatField()
 
-    def __str_(self):
+    def __str__(self):
         return '{} {}'.format(self.ingreso , self.producto)
 

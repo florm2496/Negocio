@@ -60,9 +60,3 @@ def generar_fechas(fecha_venci,cuotas):
         
     return fechas_venc
 
-def actualizarstock(productos,cantidades):
-    
-    for p,c in zip(productos,cantidades):
-        
-        p.stock = p.stock - c
-        p.save()        
