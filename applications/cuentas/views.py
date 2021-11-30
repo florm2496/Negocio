@@ -1,5 +1,6 @@
 import datetime as dt
 import pytz
+from rest_framework.serializers import Serializer
 utc=pytz.UTC
 from rest_framework import viewsets
 from rest_framework.response import Response
@@ -8,7 +9,7 @@ from rest_framework.generics import CreateAPIView, ListAPIView
 from .models import Cuentas, Cuotas, DetalleCuenta,Pagos
 from applications.clientes.models import Clientes
 from .serializers import (NuevaCuentaSerializer, PagosSerializer, cuentasSerializer,ReporteCuentas,
-                        ListaCuotasSerializer,CuotasCuentaSerializer,NuevoPagoSerializer)
+                        ListaCuotasSerializer,CuotasCuentaSerializer,NuevoPagoSerializer,refinanciarCuentaSerializer)
 
 from rest_framework import viewsets
 import datetime as dt
@@ -21,7 +22,39 @@ from applications.productos.functions import actualizar_stock
 from rest_framework import status
 # Create your views here.
 
+class RefinanciarCuenta(APIView):
+    serializer_class=refinanciarCuentaSerializer
 
+    def get(self,request):
+        pass
+    def post(self,request):
+        #datos serializados
+        ds=self.serializer_class(request.DATA)
+        cuenta=Cuentas.objects.get(pk=ds.cuenta)
+        saldo=cuenta.saldo
+
+        cant_cuotas=ds.cant_cuotas
+        importe_cuota=saldo/cant_cuotas
+
+        fechas_venc=generar_fechas(ds.fecha_venc,cant_cuotas)
+        i=1
+        
+        lista_cuotas=[]
+        for c in range(cant_cuotas):          
+            cuota=Cuotas(cuenta=cuenta,
+                         numero_cuota=i,
+                         importe=importe_cuota,
+                         saldo=0,
+                         fecha_vencimiento=fechas_venc[c],
+                         recargo=0,
+                         descuento=0,
+                         refinanciada=True,
+                         )
+            lista_cuotas.append(cuota)
+            i+=1
+        
+        Cuotas.objects.bulk_create(lista_cuotas)
+        
 
 class NuevoPago(APIView):
     serializer_class = NuevoPagoSerializer

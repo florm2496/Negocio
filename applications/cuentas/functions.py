@@ -41,12 +41,12 @@ def get_cuentas(listacuentas,cuenta):
     return cuentas
 
 
-def generar_fechas(fecha_venci,cuotas):
+def generar_fechas(fecha_venci,cant_cuotas):
     fechas_venc=[]
 
     inicio=dt.datetime(fecha_venci.year,fecha_venci.month,1,23,59,59)
     #ahora=dt.datetime.today()
-    for c in range(cuotas):
+    for c in range(cant_cuotas):
 
         if c!=0:
             fecha = inicio + dt.timedelta(30)

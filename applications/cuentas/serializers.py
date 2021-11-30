@@ -182,7 +182,10 @@ class ReporteCuentas(serializers.ModelSerializer):
         return detalles_serializados
     
 
-
+class refinanciarCuentaSerializer(serializers.Serializer):
+    cuenta=serializers.IntegerField()
+    cant_cuotas=serializers.IntegerField()
+    fecha_venc=serializers.DateField()
 
 
 

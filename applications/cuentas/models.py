@@ -57,6 +57,7 @@ class Cuotas(models.Model):
     fecha_vencimiento=models.DateTimeField()
     estado = models.CharField(max_length=20,verbose_name='Estado de la cuota',choices=estado_cuota, default="impaga")
     vencida = models.BooleanField(default=False)
+    refinanciada = models.BooleanField(default=False)
     recargo=models.FloatField(default=0)
     descuento=models.FloatField(default=0)
     
