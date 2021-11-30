@@ -1,17 +1,27 @@
 from django.db import models
 
+
+class Domicilio(models.Model):
+    direccion=models.CharField( max_length=50)
+    localidad=models.CharField(max_length=50)
+    codigo_postal=models.CharField(max_length=10)
+    
 # Create your models here.
 class Clientes(models.Model):
     
-    tipos=[
-        ('garante','garante'),
-        ('solicitante','solicitante'),
-    ]
+  
     nombre= models.CharField(max_length=60,verbose_name="Nombre")
     apellido= models.CharField(max_length=60,verbose_name="Apellido")
+    referente= models.CharField(max_length=60,verbose_name="Referente",default='')
+    numero_cliente=models.CharField(max_length=20,default=0)
+    email=models.EmailField(blank=True,null=True)
+    fecha_nacimiento=models.DateField(blank=True,null=True)
+    lugar_trabajo=models.CharField(max_length=60,blank=True,null=True)
     dni=models.CharField(max_length=9,verbose_name="DNI", unique=True)
-    tipo=models.CharField(choices=tipos , default="solicitante",max_length=15)
-    direccion=models.CharField(verbose_name="Direccion", max_length=50)
+    garante=models.BooleanField(default=False)
+    solicitante=models.BooleanField(default=False)
+    domicilio=models.ForeignKey(Domicilio,on_delete=models.CASCADE,blank=True,null=True)
+    edad=models.IntegerField(default=0)
     telefono=models.CharField(max_length=30,verbose_name="Telefono")
     sueldo=models.CharField(max_length=30,verbose_name="Sueldo")
     boleta_sueldo=models.CharField(max_length=30,verbose_name="Numero de boleta de sueldo")

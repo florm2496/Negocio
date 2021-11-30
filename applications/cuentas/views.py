@@ -8,7 +8,7 @@ from rest_framework.generics import CreateAPIView, ListAPIView
 from .models import Cuentas, Cuotas, DetalleCuenta,Pagos
 from applications.clientes.models import Clientes
 from .serializers import (NuevaCuentaSerializer, PagosSerializer, cuentasSerializer,ReporteCuentas,
-                        ListaCuotasSerializer,CuotasCuentaSerializer,NuevoPagoSerializer)
+                        ListaCuotasSerializer,CuotasCuentaSerializer,NuevoPagoSerializer,DetallesCuentaSerializer)
 
 from rest_framework import viewsets
 import datetime as dt
@@ -103,6 +103,16 @@ class CuotasView(ListAPIView):
 
 
 
+class RefinanciarCuenta(APIView):
+    
+    
+    def post(self,otros):
+        
+        
+        
+        return Response({'status':200})
+    
+
 
 class CuotasCuentaViews(ListAPIView):
     serializer_class = CuotasCuentaSerializer
@@ -150,6 +160,7 @@ class RegistrarCuenta(CreateAPIView):
             fecha= timezone.now(),
             numero_cuenta= num_cuenta,
             metodo_pago=metodo_pago,
+            saldo=importe_cuenta,
         )
 
         
@@ -197,13 +208,20 @@ class ReporteVentas(ListAPIView):
 
     def get_queryset(self):
         cliente=self.request.query_params.get('cliente',None)
+        cuenta=self.request.query_params.get('numero_cuenta')
         cuentas=Cuentas.objects.all()
+        
+        print(cliente,cuenta)
         if cliente is None:
             queryset=cuentas
         else:
-            queryset = cuentas.filter(solicitante__dni=int(cliente))
+            queryset = cuentas.filter(solicitante__dni=cliente)
+            
+        if cuenta is not None:
+            queryset=queryset.filter(numero_cuenta=cuenta)
         
         #serializer = ReporteCuentas(queryset, many=True)
+        print(queryset)
         return queryset
 
 class NuevaCuenta(APIView):
@@ -300,3 +318,20 @@ class NuevoDetalleCuenta(APIView):
         print(serializer.data)
 
         return Response({'datos':'datos'})
+    
+    
+    
+class DetallesCuenta(ListAPIView):
+    serializer_class=DetallesCuentaSerializer
+
+    def get_queryset(self):
+        cliente=self.request.query_params.get('dni_solicitante')
+        cuenta=self.request.query_params.get('numero_cuenta')
+        
+        print(cliente,cuenta)
+        detalles=DetalleCuenta.objects.filter(cuenta__numero_cuenta=cuenta,cuenta__solicitante__dni=cliente)
+       
+        print(detalles)
+        
+        #serializer = ReporteCuentas(queryset, many=True)
+        return detalles

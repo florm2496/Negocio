@@ -16,11 +16,13 @@ estado=[
     ('activa','activa'),
     ('morosa','morosa'),
     ('inactiva','inactiva'),
-    ('pagada','pagada'),
+    ('pagada','cancelada'),
+    ('refinanciada','refinanciada')
 ]
 class Cuentas(models.Model):
-    solicitante= models.ForeignKey(Clientes, on_delete=models.CASCADE ,related_name='solicitante',default=None)
-    garante = models.ForeignKey(Clientes, on_delete=models.CASCADE , related_name='garante')
+    solicitante=models.ForeignKey(Clientes,null=True,blank=True,on_delete=models.CASCADE ,related_name='cliente_solicitante')
+    garante=models.ForeignKey(Clientes,null=True,blank=True,on_delete=models.CASCADE,related_name='cliente_garante')
+    
     importe = models.FloatField(verbose_name="Total de la venta")
     fecha = models.DateField(verbose_name="Fecha y hora de la venta")
     numero_cuenta= models.CharField(max_length=30,verbose_name="Numero de cuenta")

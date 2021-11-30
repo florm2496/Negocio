@@ -2,7 +2,8 @@ from rest_framework import serializers
 from .models import Cuentas, DetalleCuenta,Cuotas, Pagos
 from applications.clientes.serializers import clientesSerializer
 
-
+from applications.productos.models import Productos
+from applications.productos.serializers import ProductoSerializer
 # class CuotasSerializer(serializers.ModelSerializer):
 #     class Meta:
 #         model=Cuotas
@@ -65,8 +66,10 @@ class ListaCuotasSerializer(serializers.ModelSerializer):
         return estado
 
 
+
 class CuotasCuentaSerializer(serializers.ModelSerializer):
     cuotas=serializers.SerializerMethodField()
+    saldo=serializers.SerializerMethodField()
     
     class Meta:
         model=Cuentas
@@ -85,6 +88,7 @@ class CuotasCuentaSerializer(serializers.ModelSerializer):
               
     
         )
+        
 
     def get_cuotas(self,obj):
         
@@ -93,11 +97,27 @@ class CuotasCuentaSerializer(serializers.ModelSerializer):
         cuotas_serializadas=ListaCuotasSerializer(cuotas_ , many=True).data
 
         return cuotas_serializadas
+    
+    def get_saldo(self,obj):
+    
+        cuots=Cuotas.objects.filter(cuenta__numero_cuenta=obj.numero_cuenta)
+        
+        saldo=0
+        
+        saldos=[s.saldo for s in cuots]
+        
+        saldo=sum(saldos)
+        return saldo
+        
+            
+            
+    
+    
 
 
     
 
-    
+
 
 
 
@@ -147,10 +167,18 @@ class NuevaCuentaSerializer(serializers.Serializer):
     descuentos=DescuentosSerializer()
     subtotales=SubtotalesSerializer()
 
-class DetallesCuentasSerializers(serializers.ModelSerializer):
+class DetallesCuentaSerializer(serializers.ModelSerializer):
+    producto=serializers.SerializerMethodField()
     class Meta:
         model=DetalleCuenta
-        fields=('producto','subtotal')
+        fields=('__all__')
+        
+    def get_producto(self,obj):
+        producto=Productos.objects.get(pk=obj.producto.id)
+        
+        producto_serializado=ProductoSerializer(producto)
+        
+        return producto_serializado.data
 
 class ReporteCuentas(serializers.ModelSerializer):
     detalles=serializers.SerializerMethodField()
@@ -177,7 +205,7 @@ class ReporteCuentas(serializers.ModelSerializer):
         
         detalles=DetalleCuenta.objects.filter(cuenta__numero_cuenta=obj.numero_cuenta)
         
-        detalles_serializados=DetallesCuentasSerializers(detalles , many=True).data
+        detalles_serializados=DetallesCuentaSerializer(detalles , many=True).data
 
         return detalles_serializados
     

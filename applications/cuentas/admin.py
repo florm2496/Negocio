@@ -4,7 +4,7 @@ from django.contrib import admin
 from .models import Cuentas,Cuotas,DetalleCuenta,Pagos
 
 class CuentaAdmin(admin.ModelAdmin):
-    list_display=('numero_cuenta','id','solicitante','garante','importe')
+    list_display=('numero_cuenta','id','importe')
 
 class PagoAdmin(admin.ModelAdmin):
     list_display=('cuota','importe','metodo_pago')

@@ -4,6 +4,12 @@ from applications.cuentas.models import DetalleCuenta
 from django.db.models import Sum, Count
 
 
+class ProductoSerializer(serializers.ModelSerializer):
+        class Meta:
+            model=Productos
+            fields=('__all__')
+    
+
 class productosSerializer(serializers.ModelSerializer):
     cant_vendida = serializers.SerializerMethodField()
     class Meta:
