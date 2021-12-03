@@ -85,7 +85,8 @@ class CuotasCuentaSerializer(serializers.ModelSerializer):
         model=Cuentas
         fields=('solicitante',
                 'fecha',
-                'garante',
+                'garante1',
+                'garante2',
                 'importe',
                 'numero_cuenta',
                 'estado',
@@ -119,25 +120,15 @@ class CuotasCuentaSerializer(serializers.ModelSerializer):
         saldo=sum(saldos)
         return saldo
         
-            
-            
-    
-    
-
-
-    
-
-
-
-
-
+ 
 class cuentasSerializer(serializers.ModelSerializer):
     solicitante_nombre = serializers.SerializerMethodField()
     solicitante_dni = serializers.SerializerMethodField()
-    garante = serializers.SerializerMethodField()
+    garante1 = serializers.SerializerMethodField()
+    garante2 = serializers.SerializerMethodField()
     class Meta:
         model=Cuentas
-        fields=('id','importe','fecha','solicitante','solicitante_nombre','solicitante_dni','garante','numero_cuenta','estado')
+        fields=('id','importe','fecha','solicitante','solicitante_nombre','solicitante_dni','garante1','garante2','numero_cuenta','estado')
 
     def get_solicitante_nombre(self,obj):
         return obj.solicitante.nombre
@@ -145,8 +136,11 @@ class cuentasSerializer(serializers.ModelSerializer):
     def get_solicitante_dni(self,obj):
         return obj.solicitante.dni
 
-    def get_garante(self,obj):
-        return obj.garante.nombre
+    def get_garante1(self,obj):
+        return obj.garante1.nombre + obj.garante1.apellido
+
+    def get_garante2(self,obj):
+        return obj.garante2.nombre + obj.garante2.apellido
 
 
 class CantidadesSerializer(serializers.ListField):
@@ -164,7 +158,8 @@ class DescuentosSerializer(serializers.ListField):
 
 class NuevaCuentaSerializer(serializers.Serializer):
     solicitante=serializers.CharField(required=True)
-    garante=serializers.CharField(required=True)
+    garante1=serializers.CharField(required=True)
+    garante2=serializers.CharField(required=True)
     importe=serializers.FloatField(required=True)
     cant_cuotas=serializers.IntegerField(required=True)
     dia_venc= serializers.DateField(required=True)

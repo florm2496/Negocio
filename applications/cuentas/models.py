@@ -21,7 +21,9 @@ estado=[
 ]
 class Cuentas(models.Model):
     solicitante=models.ForeignKey(Clientes,null=True,blank=True,on_delete=models.CASCADE ,related_name='cliente_solicitante')
-    garante=models.ForeignKey(Clientes,null=True,blank=True,on_delete=models.CASCADE,related_name='cliente_garante')
+    garante1=models.ForeignKey(Clientes,null=True,blank=True,on_delete=models.CASCADE,related_name='garante1')
+    garante2=models.ForeignKey(Clientes,null=True,blank=True,on_delete=models.CASCADE,related_name='garante2')
+
     
     importe = models.FloatField(verbose_name="Total de la venta")
     fecha = models.DateField(verbose_name="Fecha y hora de la venta")

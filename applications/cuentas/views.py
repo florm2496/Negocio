@@ -174,7 +174,8 @@ class RegistrarCuenta(CreateAPIView):
         solicitante_dni=datos['solicitante']
         importe_cuenta=datos['importe']
         importe_cuota=datos['importe_cuota']
-        garante_dni=datos['garante']
+        garante_dni1=datos['garante1']
+        garante_dni2=datos['garante2']
         cant_cuotas=datos['cant_cuotas']
         num_cuenta=datos['num_cuenta']
         fecha_venc=datos['dia_venc']
@@ -187,11 +188,13 @@ class RegistrarCuenta(CreateAPIView):
 
         #crear cuenta
         solicitante=Clientes.objects.get(dni=int(solicitante_dni))
-        garante=Clientes.objects.get(dni=int(garante_dni))
+        garante1=Clientes.objects.get(dni=int(garante_dni1))
+        garante2=Clientes.objects.get(dni=int(garante_dni2))
 
         cuenta=Cuentas(
             solicitante=solicitante,
-            garante= garante,
+            garante1= garante1,
+            garante2=garante2,
             importe= importe_cuenta,
             fecha= timezone.now(),
             numero_cuenta= num_cuenta,
