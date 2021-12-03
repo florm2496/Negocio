@@ -24,9 +24,12 @@ class Productos(models.Model):
 
         verbose_name = 'Producto'
         verbose_name_plural = 'Productos'
+        
 
     def __str__(self):
         return self.nombre
+
+    
 
 
 

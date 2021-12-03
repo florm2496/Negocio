@@ -5,18 +5,33 @@ from rest_framework.views import APIView
 from rest_framework.generics import ListAPIView
 from rest_framework.permissions import IsAuthenticated
 from .models import Productos , DetalleIngreso , Ingresos
-from .serializers import productosSerializer,DetallesIngresosSerializers,NuevosIngresosSerializers,IngresosSerializer
+from .serializers import DetallesIngresosSerializers,NuevosIngresosSerializers,IngresosSerializer,ProductosSerializer,ProductosSerializer2
 from applications.cuentas.models import Cuentas
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 import datetime as dt
 from .functions import actualizar_stock
-# Create your views here.
+
+
+#######################
 
 class ProductosViewSet(viewsets.ModelViewSet):
-    #permission_classes=(IsAuthenticated,)
     queryset = Productos.objects.all()
-    serializer_class = productosSerializer
+    serializer_class = ProductosSerializer2
+
+    def get_queryset(self):
+        return super().get_queryset()
+    
+#########################
+
+class ProductosActivos(ListAPIView):
+    serializer_class=ProductosSerializer
+    queryset = Productos.objects.all()
+
+    def get_queryset(self):
+        return super().get_queryset().filter(estado=True).order_by('estado')
+
+############################
 
 class DetallesByIngreso(ListAPIView):
     serializer_class=DetallesIngresosSerializers
@@ -29,9 +44,11 @@ class DetallesByIngreso(ListAPIView):
             detalles=detalles
         else:
             detalles=detalles.filter(ingreso__id=ingreso.id)
-        #serializer = ReporteCuentas(queryset, many=True)
+
         datos=DetallesIngresosSerializers(detalles,many=True)
         return datos.data
+
+#############################
 
 class ReporteIngresos(ListAPIView):
     serializer_class=IngresosSerializer

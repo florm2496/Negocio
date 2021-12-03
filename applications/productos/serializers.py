@@ -1,24 +1,32 @@
+from django.db.models.expressions import Value
 from rest_framework import serializers
 from .models import DetalleIngreso, Ingresos, Productos
 from applications.cuentas.models import DetalleCuenta
 from django.db.models import Sum, Count
 
 
-class ProductoSerializer(serializers.ModelSerializer):
+#LO USO PARA EL MODAL
+class ProductosSerializer(serializers.ModelSerializer):
         class Meta:
             model=Productos
             fields=('__all__')
     
 
-class productosSerializer(serializers.ModelSerializer):
+
+#ESTE SE USA PARA LA TABLA GENERAL
+class ProductosSerializer2(serializers.ModelSerializer):
     cant_vendida = serializers.SerializerMethodField()
     class Meta:
         model=Productos
         fields=('nombre','codigo','codigo_ref','tipo','estado','precio','stock','cant_vendida')
 
     def get_cant_vendida(self,obj):
-        cant=DetalleCuenta.objects.filter(producto=obj).aggregate(cant=Sum('cantidad'))
-        return cant['cant']
+        cant=DetalleCuenta.objects.filter(producto=obj).aggregate(cant=Sum('cantidad'))['cant']
+        if cant is None:
+            cant=0
+        return cant
+
+
 
 class CantidadesSerializer(serializers.ListField):
     child = serializers.IntegerField()

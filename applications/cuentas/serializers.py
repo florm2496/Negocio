@@ -3,7 +3,17 @@ from .models import Cuentas, DetalleCuenta,Cuotas, Pagos
 from applications.clientes.serializers import clientesSerializer
 
 from applications.productos.models import Productos
-from applications.productos.serializers import ProductoSerializer
+from applications.productos.serializers import ProductosSerializer2
+
+
+
+
+class refinanciarCuentaSerializer(serializers.Serializer):
+    cuenta=serializers.IntegerField()
+    cant_cuotas=serializers.IntegerField()
+    fecha_venc=serializers.DateField()
+
+
 # class CuotasSerializer(serializers.ModelSerializer):
 #     class Meta:
 #         model=Cuotas
