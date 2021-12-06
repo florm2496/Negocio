@@ -21,10 +21,11 @@ class refinanciarCuentaSerializer(serializers.Serializer):
 class NuevoPagoSerializer(serializers.Serializer):
     numero_cuenta=serializers.CharField(required=True)
     id_cuenta=serializers.CharField(required=True)
-    numero_cuota=serializers.CharField(required=True)
+    numero_cuota=serializers.IntegerField(required=True)
     id_cuota=serializers.IntegerField(required=True)
     monto=serializers.FloatField(required=True)
     metodo=serializers.CharField(required=True)
+    excedente=serializers.FloatField(required=True)
     #fecha=serializers.DateField(required=True)
 
 class PagosSerializer(serializers.ModelSerializer):
@@ -137,11 +138,15 @@ class cuentasSerializer(serializers.ModelSerializer):
         return obj.solicitante.dni
 
     def get_garante1(self,obj):
-        return obj.garante1.nombre + obj.garante1.apellido
+        return f'{obj.garante1.nombre} {obj.garante1.apellido}'
 
     def get_garante2(self,obj):
-        return obj.garante2.nombre + obj.garante2.apellido
-
+        try:
+            nombre=f'{obj.garante2.nombre} {obj.garante2.apellido}'
+        except:
+            nombre=None
+        
+        return nombre
 
 class CantidadesSerializer(serializers.ListField):
     child = serializers.IntegerField()
@@ -159,7 +164,7 @@ class DescuentosSerializer(serializers.ListField):
 class NuevaCuentaSerializer(serializers.Serializer):
     solicitante=serializers.CharField(required=True)
     garante1=serializers.CharField(required=True)
-    garante2=serializers.CharField(required=True)
+    garante2=serializers.CharField(required=False)
     importe=serializers.FloatField(required=True)
     cant_cuotas=serializers.IntegerField(required=True)
     dia_venc= serializers.DateField(required=True)

@@ -44,17 +44,25 @@ def get_cuentas(listacuentas,cuenta):
 def generar_fechas(fecha_venci,cuotas):
     fechas_venc=[]
 
-    inicio=dt.datetime(fecha_venci.year,fecha_venci.month,1,23,59,59)
+    fecha_actual=fecha_venci
     #ahora=dt.datetime.today()
     for c in range(cuotas):
 
         if c!=0:
-            fecha = inicio + dt.timedelta(30)
-        else:
-            fecha = inicio
-  
-        fechas_venc.append(fecha)
-        inicio=fecha
+            mes=fecha_actual.month
+            año=fecha_actual.year
+            dia=fecha_actual.day
+            
+            if mes == 12:
+                mes=1
+                año=año+1
+                fecha_actual=dt.datetime(año,mes,dia)
+            else:
+                mes=mes+1
+                fecha_actual=dt.datetime(año,mes,dia)
+
+        fechas_venc.append(fecha_actual)
+        
         
         
         

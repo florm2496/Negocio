@@ -66,25 +66,75 @@ class NuevoPago(APIView):
         serializer = NuevoPagoSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         datos=serializer.validated_data
+        num_cuota=datos['numero_cuota']
+        id_cuota=datos['id_cuota']
         cuenta=Cuentas.objects.get(numero_cuenta=datos['numero_cuenta'],pk=datos['id_cuenta'])
-        cuota=Cuotas.objects.get(numero_cuota=datos['numero_cuota'],pk=datos['id_cuota'])
+        cuota=Cuotas.objects.get(numero_cuota=num_cuota,pk=id_cuota,cuenta__id=cuenta.pk)
 
         monto_pago=datos['monto']
         metodo_pago=datos['metodo']
-        fecha=dt.datetime.now()
-        
-        nuevo_pago=Pagos(
-            cuota=cuota,
-            importe=monto_pago,
-            metodo_pago=metodo_pago,
-            fecha=fecha,
-
-        )
-        nuevo_pago.save()
-
+        excedente=datos['excedente']
 
         
+        if excedente == 0:
+        #se crea el nuevo pago , nunca sera menor a 0 por validaciones del front
+            nuevo_pago=Pagos(
+                cuota=cuota,
+                importe=monto_pago,
+                metodo_pago=metodo_pago,
+                fecha=dt.datetime.now(),
 
+            )
+            nuevo_pago.save()
+        
+        #se descuenta del saldo de la cuota lo pagado
+
+
+            nuevo_saldo=cuota.saldo - monto_pago
+            cuota.saldo=nuevo_saldo
+            if nuevo_saldo <=0:
+                cuota.estado='pagada'
+            
+            cuota.save()
+        
+        #luego se verifica si el excedente es mayor a 0 , si hay excedente se descontara de la siguiente cuota
+        else:
+            while excedente>0:
+        
+                num_sc=num_cuota + 1
+                ste_cuota=Cuotas.objects.filter(numero_cuota=num_sc,cuenta__id=cuenta.pk)
+                
+                if ste_cuota.count() > 0:
+                    ste_cuota=ste_cuota[0]
+                    if excedente > ste_cuota.saldo:
+                        
+                        cobrar=ste_cuota.saldo
+
+                        ste_cuota.saldo=0
+                        ste_cuota.save()
+                        
+                        
+                        
+                    else:
+                        cobrar=excedente
+                        
+                        ste_cuota.saldo= ste_cuota.saldo - excedente
+                        ste_cuota.save()
+
+                    pago_ste_cuota=Pagos(
+                    cuota=ste_cuota,
+                    importe=cobrar,
+                    metodo_pago=metodo_pago,
+                    fecha=dt.datetime.now(),
+
+                    )
+                    pago_ste_cuota.save()
+                    
+                    num_cuota=num_sc
+                    
+                    excendente= excedente-cobrar
+                else:
+                    break
 
         pago_serializado=PagosSerializer(nuevo_pago)
         return Response({'response':'ok','status':200,'pago':pago_serializado.data})
@@ -175,7 +225,7 @@ class RegistrarCuenta(CreateAPIView):
         importe_cuenta=datos['importe']
         importe_cuota=datos['importe_cuota']
         garante_dni1=datos['garante1']
-        garante_dni2=datos['garante2']
+        garante_dni2=datos.get('garante2',None)
         cant_cuotas=datos['cant_cuotas']
         num_cuenta=datos['num_cuenta']
         fecha_venc=datos['dia_venc']
@@ -189,7 +239,11 @@ class RegistrarCuenta(CreateAPIView):
         #crear cuenta
         solicitante=Clientes.objects.get(dni=int(solicitante_dni))
         garante1=Clientes.objects.get(dni=int(garante_dni1))
-        garante2=Clientes.objects.get(dni=int(garante_dni2))
+        
+        if garante_dni2 is None:
+            garante2=None
+        else:
+            garante2=Clientes.objects.get(dni=int(garante_dni2))
 
         cuenta=Cuentas(
             solicitante=solicitante,
