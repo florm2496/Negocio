@@ -9,9 +9,9 @@ from applications.productos.serializers import ProductosSerializer2
 
 
 class refinanciarCuentaSerializer(serializers.Serializer):
-    cuenta=serializers.IntegerField()
-    cant_cuotas=serializers.IntegerField()
-    fecha_venc=serializers.DateField()
+    cuenta=serializers.IntegerField(required=True)
+    cant_cuotas=serializers.IntegerField(required=True)
+    fecha_venc=serializers.DateField(required=True)
 
 
 # class CuotasSerializer(serializers.ModelSerializer):
@@ -42,11 +42,13 @@ class ListaCuotasSerializer(serializers.ModelSerializer):
     recargo=serializers.SerializerMethodField()
     pagos_cuotas=serializers.SerializerMethodField()
     pagada=serializers.SerializerMethodField()
+    refinanciada=serializers.SerializerMethodField()
 
 
     class Meta:
         model=Cuotas
-        fields=('id','saldo','importe','numero_cuota','fecha_vencimiento','vencida','estado','recargo','pagos_cuotas','pagada')
+        fields=('id','saldo','importe','numero_cuota','fecha_vencimiento','vencida','estado','recargo','pagos_cuotas','pagada','refinanciada')
+ 
 
     def get_pagos_cuotas(self,obj):
         pagos_=Pagos.objects.filter(cuota=obj.id)
@@ -59,6 +61,13 @@ class ListaCuotasSerializer(serializers.ModelSerializer):
 
     def get_vencida(self,obj):
         if obj.vencida:
+            value= "SI"
+        else:
+            value = "NO"
+        return value
+
+    def get_refinanciada(self,obj):
+        if obj.refinanciada:
             value= "SI"
         else:
             value = "NO"

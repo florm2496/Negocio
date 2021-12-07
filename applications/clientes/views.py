@@ -26,7 +26,7 @@ class clientesViewSet(viewsets.ModelViewSet):
             objs=clientes.filter(dni__icontains=dni)
             
             if tipo is not None:
-                print(objs)
+          
                 if tipo=='garante':
                     objs=objs.filter(garante=True)
                     

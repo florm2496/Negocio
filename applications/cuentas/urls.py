@@ -20,5 +20,8 @@ urlpatterns = [
     #path('cuotas', cuentas_views.CuotasView.as_view(),name="cuotas"),
     path('cuotascuenta', cuentas_views.CuotasCuentaViews.as_view(),name="cuotas"),
     path('nuevopago', cuentas_views.NuevoPago.as_view(),name="nuevopago"),
+    path('refinanciarcuenta', cuentas_views.RefinanciarCuenta.as_view(),name="refinanciar-cuenta"),
+
+    
     
 ]   

@@ -19,6 +19,7 @@ from django.utils import timezone
 from .functions import generar_fechas , get_cuentas , update_dues
 from applications.productos.functions import actualizar_stock
 from rest_framework import status
+from django.db.models import Q
 # Create your views here.
 
 
@@ -27,22 +28,30 @@ from rest_framework import status
 class RefinanciarCuenta(APIView):
     serializer_class=refinanciarCuentaSerializer
 
-    def get(self,request):
-        pass
     def post(self,request):
+        
         #datos serializados
-        ds=self.serializer_class(request.DATA)
-        cuenta=Cuentas.objects.get(pk=ds.cuenta)
+        ds=self.serializer_class(request.data)
+
+        num_cuenta=ds.data.get('cuenta')
+        cuenta=Cuentas.objects.get(numero_cuenta=num_cuenta)
         saldo=cuenta.saldo
 
-        cant_cuotas=ds.cant_cuotas
+        cant_cuotas=ds.data.get('cant_cuotas')
         importe_cuota=saldo/cant_cuotas
 
-        fechas_venc=generar_fechas(ds.fecha_venc,cant_cuotas)
-        i=1
+        fc=ds.data.get('fecha_venc')
+        fecha_venc=dt.datetime.strptime(fc,'%Y-%m-%d')
+
+        print(fc)
+        fechas_venc=generar_fechas(fecha_venc,cant_cuotas)
+        
+        ultima_cuota=Cuotas.objects.all().last()
+        i=ultima_cuota.numero_cuota
         
         lista_cuotas=[]
-        for c in range(cant_cuotas):          
+        for c in range(cant_cuotas):
+            i+=1          
             cuota=Cuotas(cuenta=cuenta,
                          numero_cuota=i,
                          importe=importe_cuota,
@@ -50,14 +59,20 @@ class RefinanciarCuenta(APIView):
                          fecha_vencimiento=fechas_venc[c],
                          recargo=0,
                          descuento=0,
-                         refinanciada=True,
+                         refinanciada=False,
                          )
             lista_cuotas.append(cuota)
-            i+=1
+            
+        
+
         
         Cuotas.objects.bulk_create(lista_cuotas)
+        Cuotas.objects.filter(Q(cuenta__pk=cuenta.id) and ~Q(estado='impaga') and ~Q(saldo=0)).update(refinanciada=True)
+        cuenta.estado='refinanciada'
+        cuenta.save()
 
 
+        return Response({'status':200})
 
 class NuevoPago(APIView):
     serializer_class = NuevoPagoSerializer
@@ -75,9 +90,8 @@ class NuevoPago(APIView):
         metodo_pago=datos['metodo']
         excedente=datos['excedente']
 
-        
         if excedente == 0:
-        #se crea el nuevo pago , nunca sera menor a 0 por validaciones del front
+            #se crea el nuevo pago , nunca sera menor a 0 por validaciones del front
             nuevo_pago=Pagos(
                 cuota=cuota,
                 importe=monto_pago,
@@ -87,7 +101,7 @@ class NuevoPago(APIView):
             )
             nuevo_pago.save()
         
-        #se descuenta del saldo de la cuota lo pagado
+            #se descuenta del saldo de la cuota lo pagado
 
 
             nuevo_saldo=cuota.saldo - monto_pago
@@ -97,47 +111,51 @@ class NuevoPago(APIView):
             
             cuota.save()
         
-        #luego se verifica si el excedente es mayor a 0 , si hay excedente se descontara de la siguiente cuota
+            #luego se verifica si el excedente es mayor a 0 , si hay excedente se descontara de la siguiente cuota
         else:
-            while excedente>0:
-        
-                num_sc=num_cuota + 1
-                ste_cuota=Cuotas.objects.filter(numero_cuota=num_sc,cuenta__id=cuenta.pk)
+            pago_total=excedente + monto_pago
+            while pago_total>0:
                 
-                if ste_cuota.count() > 0:
-                    ste_cuota=ste_cuota[0]
-                    if excedente > ste_cuota.saldo:
-                        
-                        cobrar=ste_cuota.saldo
+                cuota=Cuotas.objects.filter(numero_cuota=num_cuota,cuenta__id=cuenta.pk)
+                
+                if cuota.count() > 0:
+                    cuota=cuota[0]
+                    if pago_total > cuota.saldo:
+     
+                        cobrar=cuota.saldo
 
-                        ste_cuota.saldo=0
-                        ste_cuota.save()
+                        cuota.saldo=0
+                        cuota.estado='pagada'
+                        cuota.save()
+
                         
+                    elif pago_total < cuota.saldo:
+                        cobrar=pago_total
                         
-                        
-                    else:
-                        cobrar=excedente
-                        
-                        ste_cuota.saldo= ste_cuota.saldo - excedente
-                        ste_cuota.save()
+                        cuota.saldo= cuota.saldo - cobrar   
+
+                        print('el pago es menor a la cuotota',cuota.saldo)
+                        cuota.save()
 
                     pago_ste_cuota=Pagos(
-                    cuota=ste_cuota,
+                    cuota=cuota,
                     importe=cobrar,
                     metodo_pago=metodo_pago,
                     fecha=dt.datetime.now(),
 
                     )
                     pago_ste_cuota.save()
-                    
-                    num_cuota=num_sc
-                    
-                    excendente= excedente-cobrar
+
+                    num_cuota += 1
+
+                    pago_total= pago_total-cobrar
                 else:
                     break
 
-        pago_serializado=PagosSerializer(nuevo_pago)
-        return Response({'response':'ok','status':200,'pago':pago_serializado.data})
+                
+                
+        #pago_serializado=PagosSerializer(nuevo_pago)
+        return Response({'response':'ok','status':200})
 
 
 
@@ -188,16 +206,6 @@ class CuotasView(ListAPIView):
 #         return Response(serializer.data)
 
 
-
-class RefinanciarCuenta(APIView):
-    
-    
-    def post(self,otros):
-        
-        
-        
-        return Response({'status':200})
-    
 
 
 class CuotasCuentaViews(ListAPIView):

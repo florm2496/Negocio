@@ -33,6 +33,7 @@ class Cuentas(models.Model):
     baja = models.BooleanField(default=False)  # este campo es para dar de baja la cuenta
     anticipo=models.FloatField(default=0)
     metodo_pago=models.CharField(choices=metodos,max_length=20,default="contado")
+    refinanciada=models.BooleanField(default=False)
     
     def __str__(self):
         return '{}'.format(self.numero_cuenta)
@@ -63,6 +64,7 @@ class Cuotas(models.Model):
     vencida = models.BooleanField(default=False)
     recargo=models.FloatField(default=0)
     descuento=models.FloatField(default=0)
+    refinanciada=models.BooleanField(default=False)
     
     class Meta:
         ordering= ('numero_cuota',)
@@ -87,34 +89,34 @@ class Pagos(models.Model):
 
 
 
-@receiver(post_save, sender=Pagos)
-def actualizar_cuenta(instance, **kwargs):
-    cuota_id=instance.cuota.id
-    importe_pago=instance.importe
-    cuenta_id=instance.cuota.cuenta.id
-    cuenta=Cuentas.objects.get(pk=cuenta_id)
+# @receiver(post_save, sender=Pagos)
+# def actualizar_cuenta(instance, **kwargs):
+#     cuota_id=instance.cuota.id
+#     importe_pago=instance.importe
+#     cuenta_id=instance.cuota.cuenta.id
+#     cuenta=Cuentas.objects.get(pk=cuenta_id)
 
-    cuota=Cuotas.objects.get(pk=cuota_id)
-    cuota.saldo -=  importe_pago
+#     cuota=Cuotas.objects.get(pk=cuota_id)
+#     cuota.saldo -=  importe_pago
 
 
 
-    if cuota.saldo <= 0:
-        cuota.estado = 'pagada'
+#     if cuota.saldo <= 0:
+#         cuota.estado = 'pagada'
     
-    cuota.save()
+#     cuota.save()
 
-    total_pagado = Pagos.objects.filter(cuota__cuenta__numero_cuenta=0).aggregate(suma=models.Sum('importe'))['suma']
-    if total_pagado is None:
-        total_pagado=0
+#     total_pagado = Pagos.objects.filter(cuota__cuenta__numero_cuenta=0).aggregate(suma=models.Sum('importe'))['suma']
+#     if total_pagado is None:
+#         total_pagado=0
 
     
-    cuenta.saldo -= float(total_pagado)
+#     cuenta.saldo -= float(total_pagado)
 
-    if cuenta.saldo <= 0:
-        cuenta.estado = 'pagada'
+#     if cuenta.saldo <= 0:
+#         cuenta.estado = 'pagada'
 
-    cuenta.save()
+#     cuenta.save()
 
     
 
