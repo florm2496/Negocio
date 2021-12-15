@@ -1,4 +1,6 @@
 from rest_framework import serializers
+
+from applications.clientes.models import Clientes
 from .models import Cuentas, DetalleCuenta,Cuotas, Pagos
 from applications.clientes.serializers import clientesSerializer
 
@@ -90,6 +92,8 @@ class ListaCuotasSerializer(serializers.ModelSerializer):
 class CuotasCuentaSerializer(serializers.ModelSerializer):
     cuotas=serializers.SerializerMethodField()
     saldo=serializers.SerializerMethodField()
+    garante1=serializers.SerializerMethodField()
+    garante2=serializers.SerializerMethodField()
     
     class Meta:
         model=Cuentas
@@ -129,7 +133,17 @@ class CuotasCuentaSerializer(serializers.ModelSerializer):
         
         saldo=sum(saldos)
         return saldo
+
+    def get_garante1(self,obj):
+        return f'{obj.garante1.nombre} {obj.garante1.apellido}'
+
+    def get_garante2(self,obj):
+        try:
+            nombre=f'{obj.garante2.nombre} {obj.garante2.apellido}'
+        except:
+            nombre=None
         
+        return nombre
  
 class cuentasSerializer(serializers.ModelSerializer):
     solicitante_nombre = serializers.SerializerMethodField()

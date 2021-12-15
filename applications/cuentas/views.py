@@ -166,6 +166,11 @@ class cuentasViewSet(viewsets.ModelViewSet):
     queryset = Cuentas.objects.all()
     serializer_class = cuentasSerializer
 
+    def get_queryset(self):
+        
+        return super().get_queryset()
+    
+
     # @action(detail=True, methods=['get'])
     # def cuentas_cliente(self,request,pk=None):
     #     datos=Cuentas.objects.all()

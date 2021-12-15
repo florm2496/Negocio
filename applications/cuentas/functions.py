@@ -28,7 +28,7 @@ def update_dues(listacuentas):
         else:
             c.estado='pagada'
             c.save()
-
+ 
 
            
 
