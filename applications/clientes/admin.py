@@ -7,7 +7,7 @@ from .models import Clientes,Domicilio
 
 
 class ClienteAdmin(admin.ModelAdmin):
-    list_display=('dni','nombre','apellido','id')
+    list_display=('dni','nombre','apellido','id','numero_cliente')
 
 
 admin.site.register(Clientes,ClienteAdmin)

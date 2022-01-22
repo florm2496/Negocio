@@ -3,11 +3,15 @@ import pytz
 utc=pytz.UTC
 
 from applications.cuentas.models import Cuentas,Cuotas
+from applications.base.models import Configuraciones
 
 def update_dues(listacuentas):
     for c in listacuentas:
         cuotas = Cuotas.objects.filter(cuenta__numero_cuenta=c.numero_cuenta,vencida=False)
+
         cuotas_impagas=Cuotas.objects.filter(cuenta__numero_cuenta=c.numero_cuenta,estado='impaga')
+
+
         if cuotas_impagas.count() > 0:
              for cuota in cuotas:
 
@@ -29,11 +33,44 @@ def update_dues(listacuentas):
             c.estado='pagada'
             c.save()
  
+def actualizar_estado_cuotas(cuentas):
+    configs=Configuraciones.objects.all().first()
 
-           
+    cuentas=cuentas.exclude(estado='cancelada')
+
+    for cuenta in cuentas:
+    
+        cuotas_vencidas=Cuotas.objects.filter(cuenta__id=cuenta.id , estado='impaga' ,vencida=False)
+
+        if cuotas_vencidas.count() > 0:
+
+            for cuota in cuotas_vencidas:
+
+                venc=cuota.fecha_vencimiento
+
+                if venc <=  utc.localize(dt.datetime.now()):
+
+                    cuenta.estado = 'morosa'
+
+                    cuenta.save()
+
+                    cuota.vencida = True
+
+                    cuota.recargo = cuota.saldo * configs.recargo_interes
+
+                    cuota.estado = 'morosa'
+
+                    cuota.saldo = cuota.saldo + cuota.recargo
+
+                    cuota.save()
+        else:
+            cuenta.estado='cancelada'
+            cuenta.save()
+
+
 
 def get_cuentas(listacuentas,cuenta):
-    update_dues(listacuentas)
+    actualizar_estado_cuotas(listacuentas)
     if cuenta is None:
         cuentas=Cuentas.objects.all()
     else:

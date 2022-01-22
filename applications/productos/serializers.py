@@ -1,8 +1,23 @@
-from django.db.models.expressions import Value
+
 from rest_framework import serializers
-from .models import DetalleIngreso, Ingresos, Productos
+from .models import DetalleIngreso, Ingresos, Productos, Rubros
 from applications.cuentas.models import DetalleCuenta
-from django.db.models import Sum, Count
+from django.db.models import Sum
+
+
+
+
+class ABMProductosSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model=Productos
+        fields=('__all__')
+
+class RubrosSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model=Rubros
+        fields=('__all__')
 
 
 #LO USO PARA EL MODAL
@@ -15,16 +30,22 @@ class ProductosSerializer(serializers.ModelSerializer):
 
 #ESTE SE USA PARA LA TABLA GENERAL
 class ProductosSerializer2(serializers.ModelSerializer):
-    cant_vendida = serializers.SerializerMethodField()
+    #cant_vendida = serializers.SerializerMethodField()
+    rubro = serializers.SerializerMethodField()
     class Meta:
         model=Productos
-        fields=('nombre','codigo','codigo_ref','tipo','estado','precio','stock','cant_vendida')
+        fields=('nombre','codigo','codigo_ref','rubro','precio','stock')
 
-    def get_cant_vendida(self,obj):
-        cant=DetalleCuenta.objects.filter(producto=obj).aggregate(cant=Sum('cantidad'))['cant']
-        if cant is None:
-            cant=0
-        return cant
+    # def get_cant_vendida(self,obj):
+    #     cant=DetalleCuenta.objects.filter(producto=obj).aggregate(cant=Sum('cantidad'))['cant']
+    #     if cant is None:
+    #         cant=0
+    #     return cant
+
+    def get_rubro(self,obj):
+        rubro=Rubros.objects.get(pk=obj.rubro.id)
+
+        return RubrosSerializer(rubro).data
 
 
 

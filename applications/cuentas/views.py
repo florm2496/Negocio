@@ -7,7 +7,7 @@ from rest_framework.views import APIView
 from rest_framework.generics import CreateAPIView, ListAPIView
 from .models import Cuentas, Cuotas, DetalleCuenta,Pagos
 from applications.clientes.models import Clientes
-from .serializers import (NuevaCuentaSerializer, PagosSerializer, cuentasSerializer,ReporteCuentas,
+from .serializers import (NuevaCuentaSerializer, PagosSerializer, cuentasSerializer,detalleCuentaClienteSerializer,
                         ListaCuotasSerializer,CuotasCuentaSerializer,NuevoPagoSerializer,DetallesCuentaSerializer,refinanciarCuentaSerializer)
 
 from rest_framework import viewsets
@@ -16,7 +16,7 @@ from applications.cuentas import serializers
 from django.db.models import Max
 from applications.productos.models import Productos
 from django.utils import timezone
-from .functions import generar_fechas , get_cuentas , update_dues
+from .functions import generar_fechas , get_cuentas , update_dues,actualizar_estado_cuotas
 from applications.productos.functions import actualizar_stock
 from rest_framework import status
 from django.db.models import Q
@@ -43,19 +43,21 @@ class RefinanciarCuenta(APIView):
         fc=ds.data.get('fecha_venc')
         fecha_venc=dt.datetime.strptime(fc,'%Y-%m-%d')
 
-        print(fc)
+ 
         fechas_venc=generar_fechas(fecha_venc,cant_cuotas)
         
         ultima_cuota=Cuotas.objects.all().last()
         i=ultima_cuota.numero_cuota
         
         lista_cuotas=[]
+        Cuotas.objects.filter(Q(cuenta__pk=cuenta.id) and ~Q(saldo=0)).update(refinanciada=True)
+        
         for c in range(cant_cuotas):
             i+=1          
             cuota=Cuotas(cuenta=cuenta,
                          numero_cuota=i,
                          importe=importe_cuota,
-                         saldo=0,
+                         saldo=importe_cuota,
                          fecha_vencimiento=fechas_venc[c],
                          recargo=0,
                          descuento=0,
@@ -63,11 +65,9 @@ class RefinanciarCuenta(APIView):
                          )
             lista_cuotas.append(cuota)
             
-        
+        Cuotas.objects.bulk_create(lista_cuotas)
 
         
-        Cuotas.objects.bulk_create(lista_cuotas)
-        Cuotas.objects.filter(Q(cuenta__pk=cuenta.id) and ~Q(estado='impaga') and ~Q(saldo=0)).update(refinanciada=True)
         cuenta.estado='refinanciada'
         cuenta.save()
 
@@ -167,6 +167,12 @@ class cuentasViewSet(viewsets.ModelViewSet):
     serializer_class = cuentasSerializer
 
     def get_queryset(self):
+
+        cuentas=super().get_queryset()
+
+        
+        actualizar_estado_cuotas(cuentas)
+
         
         return super().get_queryset()
     
@@ -248,6 +254,8 @@ class RegistrarCuenta(CreateAPIView):
         cants=datos['cantidades']
         subts=datos['subtotales']
         descs=datos['descuentos']
+        anticipo=datos['anticipo']
+        descuento=datos['descuento']
 
         #crear cuenta
         solicitante=Clientes.objects.get(dni=int(solicitante_dni))
@@ -263,6 +271,8 @@ class RegistrarCuenta(CreateAPIView):
             garante1= garante1,
             garante2=garante2,
             importe= importe_cuenta,
+            anticipo=anticipo,
+            descuento=descuento,
             fecha= timezone.now(),
             numero_cuenta= num_cuenta,
             metodo_pago=metodo_pago,
@@ -310,7 +320,7 @@ class RegistrarCuenta(CreateAPIView):
 
 
 class ReporteVentas(ListAPIView):
-    serializer_class=ReporteCuentas
+    serializer_class=detalleCuentaClienteSerializer
 
     def get_queryset(self):
         cliente=self.request.query_params.get('cliente',None)
@@ -329,6 +339,29 @@ class ReporteVentas(ListAPIView):
         #serializer = ReporteCuentas(queryset, many=True)
         print(queryset)
         return queryset
+
+
+class detalleCuentaCliente(APIView):
+    serializer_class=detalleCuentaClienteSerializer
+
+    def get(self,request):
+
+        dni_cliente=self.request.query_params.get('cliente')
+        numero_cuenta=self.request.query_params.get('numero_cuenta',None)
+
+        cuentas_cliente=Cuentas.objects.filter(solicitante__dni=dni_cliente)
+
+
+        if numero_cuenta is not None:
+
+            cuentas=cuentas_cliente.filter(numero_cuenta=numero_cuenta)
+
+
+        cuenta_serializada = self.serializer_class(cuentas,many=True)
+
+        return Response(cuenta_serializada.data)
+
+
 
 class NuevaCuenta(APIView):
     serializer_class=NuevaCuentaSerializer
@@ -433,11 +466,8 @@ class DetallesCuenta(ListAPIView):
     def get_queryset(self):
         cliente=self.request.query_params.get('dni_solicitante')
         cuenta=self.request.query_params.get('numero_cuenta')
-        
-        print(cliente,cuenta)
+      
         detalles=DetalleCuenta.objects.filter(cuenta__numero_cuenta=cuenta,cuenta__solicitante__dni=cliente)
-       
-        print(detalles)
         
         #serializer = ReporteCuentas(queryset, many=True)
         return detalles

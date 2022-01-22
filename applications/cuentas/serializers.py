@@ -1,11 +1,11 @@
 from rest_framework import serializers
-
+from django.db.models import Count,Sum
 from applications.clientes.models import Clientes
 from .models import Cuentas, DetalleCuenta,Cuotas, Pagos
 from applications.clientes.serializers import clientesSerializer
 
 from applications.productos.models import Productos
-from applications.productos.serializers import ProductosSerializer2
+from applications.productos.serializers import ProductosSerializer2,ProductosSerializer
 
 
 
@@ -94,6 +94,7 @@ class CuotasCuentaSerializer(serializers.ModelSerializer):
     saldo=serializers.SerializerMethodField()
     garante1=serializers.SerializerMethodField()
     garante2=serializers.SerializerMethodField()
+    solicitante=serializers.SerializerMethodField()
     
     class Meta:
         model=Cuentas
@@ -126,9 +127,7 @@ class CuotasCuentaSerializer(serializers.ModelSerializer):
     def get_saldo(self,obj):
     
         cuots=Cuotas.objects.filter(cuenta__numero_cuenta=obj.numero_cuenta)
-        
-        saldo=0
-        
+ 
         saldos=[s.saldo for s in cuots]
         
         saldo=sum(saldos)
@@ -136,6 +135,9 @@ class CuotasCuentaSerializer(serializers.ModelSerializer):
 
     def get_garante1(self,obj):
         return f'{obj.garante1.nombre} {obj.garante1.apellido}'
+
+    def get_solicitante(self,obj):
+        return f'{obj.solicitante.nombre} {obj.solicitante.apellido}'
 
     def get_garante2(self,obj):
         try:
@@ -146,16 +148,16 @@ class CuotasCuentaSerializer(serializers.ModelSerializer):
         return nombre
  
 class cuentasSerializer(serializers.ModelSerializer):
-    solicitante_nombre = serializers.SerializerMethodField()
+    solicitante = serializers.SerializerMethodField()
     solicitante_dni = serializers.SerializerMethodField()
     garante1 = serializers.SerializerMethodField()
     garante2 = serializers.SerializerMethodField()
     class Meta:
         model=Cuentas
-        fields=('id','importe','fecha','solicitante','solicitante_nombre','solicitante_dni','garante1','garante2','numero_cuenta','estado')
+        fields=('id','importe','fecha','solicitante','solicitante_dni','garante1','garante2','numero_cuenta','estado')
 
-    def get_solicitante_nombre(self,obj):
-        return obj.solicitante.nombre
+    def get_solicitante(self,obj):
+        return  f'{obj.solicitante.nombre} {obj.solicitante.apellido}'
 
     def get_solicitante_dni(self,obj):
         return obj.solicitante.dni
@@ -174,7 +176,7 @@ class cuentasSerializer(serializers.ModelSerializer):
 class CantidadesSerializer(serializers.ListField):
     child = serializers.IntegerField()
 
-class ProductosSerializer(serializers.ListField):
+class ProductosListSerializer(serializers.ListField):
     child = serializers.IntegerField()
 
 class SubtotalesSerializer(serializers.ListField):
@@ -195,13 +197,18 @@ class NuevaCuentaSerializer(serializers.Serializer):
     anticipo=serializers.FloatField(required=True)
     metodo_pago=serializers.CharField(required=True)
     num_cuenta=serializers.IntegerField(required=True)
+    descuento=serializers.FloatField(required=True)
     cantidades=CantidadesSerializer()
-    productos=ProductosSerializer()
+    productos=ProductosListSerializer()
     descuentos=DescuentosSerializer()
     subtotales=SubtotalesSerializer()
 
+
+
 class DetallesCuentaSerializer(serializers.ModelSerializer):
     producto=serializers.SerializerMethodField()
+
+
     class Meta:
         model=DetalleCuenta
         fields=('__all__')
@@ -209,30 +216,54 @@ class DetallesCuentaSerializer(serializers.ModelSerializer):
     def get_producto(self,obj):
         producto=Productos.objects.get(pk=obj.producto.id)
         
-        producto_serializado=ProductoSerializer(producto)
+        producto_serializado=ProductosSerializer2(producto).data
         
-        return producto_serializado.data
+        return producto_serializado
 
-class ReporteCuentas(serializers.ModelSerializer):
+class detalleCuentaClienteSerializer(serializers.ModelSerializer):
     detalles=serializers.SerializerMethodField()
-    garante = serializers.SerializerMethodField()
+    solicitante=serializers.SerializerMethodField()
+    garante1 = serializers.SerializerMethodField()
+    garante2 = serializers.SerializerMethodField()
+    cuotas = serializers.SerializerMethodField()
     class Meta:
         model=Cuentas
         fields=('id',
                 'solicitante',
                 'fecha',
-                'garante',
+                'garante1',
+                'garante2',
                 'importe',
                 'numero_cuenta',
                 'estado',
                 'metodo_pago',
                 'anticipo',
-                'detalles'
+                'detalles',
+                'descuento',
+                'cuotas',
     
         )
-    def get_garante(self,obj):
+    def get_solicitante(self,obj):
+        cliente=Clientes.objects.get(id=obj.solicitante.id , dni=obj.solicitante.dni)
+        cliente_serializado=clientesSerializer(cliente)
+        return  cliente_serializado.data
 
-        return obj.garante.dni
+
+    def get_garante1(self,obj):
+        cliente=Clientes.objects.get(id=obj.garante1.id , dni=obj.garante1.dni)
+        cliente_serializado=clientesSerializer(cliente)
+        return  cliente_serializado.data
+
+    def get_garante2(self,obj):
+        try:
+            cliente=Clientes.objects.get(id=obj.garante2.id , dni=obj.garante2.dni)
+            cliente_serializado=clientesSerializer(cliente)
+            garante2=cliente_serializado.data
+
+        except:
+            garante2=None
+        
+        return garante2
 
     def get_detalles(self,obj):
         
@@ -241,6 +272,12 @@ class ReporteCuentas(serializers.ModelSerializer):
         detalles_serializados=DetallesCuentaSerializer(detalles , many=True).data
 
         return detalles_serializados
+
+
+    def get_cuotas(self,obj):
+        cuotas=Cuotas.objects.filter(cuenta__id=obj.id).aggregate(cant_cuotas=Count('id'))
+
+        return cuotas['cant_cuotas']
     
 
 

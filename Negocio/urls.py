@@ -26,6 +26,7 @@ urlpatterns = [
     path('clientes/',include(('applications.clientes.urls','clientes'),namespace='clientes')),
     path('cuentas/',include(('applications.cuentas.urls','cuentas'),namespace='cuentas')),
     path('productos/',include(('applications.productos.urls','productos'),namespace='productos')),
+    path('base/',include(('applications.base.urls','base'),namespace='base')),
     path('token/',TokenObtainPairView.as_view(),name='get_token'),
     path('refreshtoken/',TokenRefreshView.as_view(),name='get_token_refresh')
     

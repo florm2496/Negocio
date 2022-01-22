@@ -1,6 +1,12 @@
 from django.urls import path
+from .views import Estadisticas,ConfiguracionesAPIView
 
 
-urls_patterns=[
+
+
+
+urlpatterns=[
+    path('estadisticas/',Estadisticas.as_view(),name='estadisticas'),
+    path('configuraciones/',ConfiguracionesAPIView.as_view() , name='configs'),
    
 ]

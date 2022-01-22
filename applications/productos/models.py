@@ -1,23 +1,36 @@
+from email.policy import default
 from django.db import models
+from applications.base.models import CommonFields
 
 
 
 
-class Productos(models.Model):
-    rubro = [
-        ('ELECTRODOMESTICOS', 'ELECTRODOMESTICOS'),
-        ('INDUMENTARIA', 'INDUMENTARIA'),
-        ('BAZAR', 'BAZAR'),
-        ('REGALERIA', 'REGALERIA'),
-   
-    ]
+class Rubros(CommonFields):
+    nombre = models.CharField(max_length=50)
+
+    class Meta:
+        verbose_name = 'Rubro'
+        verbose_name_plural = 'Rubros'
+
+    def __str__(self):
+        return self.nombre
+
+    def save(self, *args, **kwargs):
+        self.nombre = self.nombre.upper()
+        super(Rubros, self).save(*args, **kwargs)
+
+
+
+
+class Productos(CommonFields):
+
 
     nombre = models.CharField(max_length=50)
-    codigo = models.IntegerField()
-    codigo_ref = models.CharField(default="A" , max_length=10)
+    codigo = models.CharField(unique=True,max_length=10)
+    codigo_ref = models.CharField(max_length=10)
     stock  = models.IntegerField(default=0)
-    precio = models.FloatField()
-    tipo = models.CharField(choices=rubro,max_length=30)
+    precio = models.FloatField(default=0)
+    rubro = models.ForeignKey(Rubros, on_delete=models.CASCADE)
     estado=models.BooleanField(default=True)
 
     class Meta:

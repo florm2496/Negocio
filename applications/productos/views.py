@@ -1,11 +1,12 @@
 from django.shortcuts import render
 from rest_framework import serializers, viewsets
 from rest_framework.response import Response
+from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.generics import ListAPIView
 from rest_framework.permissions import IsAuthenticated
-from .models import Productos , DetalleIngreso , Ingresos
-from .serializers import DetallesIngresosSerializers,NuevosIngresosSerializers,IngresosSerializer,ProductosSerializer,ProductosSerializer2
+from .models import Productos , DetalleIngreso , Ingresos , Rubros
+from .serializers import DetallesIngresosSerializers,NuevosIngresosSerializers,IngresosSerializer,ABMProductosSerializer,RubrosSerializer,ProductosSerializer2
 from applications.cuentas.models import Cuentas
 from django.db.models.signals import post_save
 from django.dispatch import receiver
@@ -13,25 +14,58 @@ import datetime as dt
 from .functions import actualizar_stock
 
 
+
+class ABMProducto(APIView):
+    serializer_class = ABMProductosSerializer
+
+    def put(self, request, codigo):
+        
+        producto = Productos.objects.get(codigo=codigo)
+        serializer = self.serializer_class(producto, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def post(self, request):
+
+        serializer = self.serializer_class(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self,request,codigo):
+
+        producto = Productos.objects.get(codigo=codigo)
+        producto.activo=False
+        producto.save()
+
+        return Response(status=status.HTTP_200_OK)
+
+
+
+
 #######################
 
+class RubrosViewSet(viewsets.ModelViewSet):
+
+    serializer_class = RubrosSerializer
+    queryset =Rubros.objects.all()
+
+
 class ProductosViewSet(viewsets.ModelViewSet):
-    queryset = Productos.objects.all()
+    queryset = Productos.objects.filter(activo=True)
     serializer_class = ProductosSerializer2
 
-    def get_queryset(self):
-        return super().get_queryset()
+    
+
+
+
     
 #########################
 
-class ProductosActivos(ListAPIView):
-    serializer_class=ProductosSerializer
-    queryset = Productos.objects.all()
 
-    def get_queryset(self):
-        return super().get_queryset().filter(estado=True).order_by('estado')
-
-############################
 
 class DetallesByIngreso(ListAPIView):
     serializer_class=DetallesIngresosSerializers

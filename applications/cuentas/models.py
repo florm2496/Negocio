@@ -1,3 +1,4 @@
+from email.policy import default
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
@@ -8,23 +9,22 @@ from applications.productos.models import Productos
 
 # Create your models here.
 
+
 metodos=[
-    ('contado','contado'),
-    ('tarjeta','tarjeta'),
+    ('CONTADO','CONTADO'),
+    ('TARJETA','TARJETA'),
+
 ]
 estado=[
     ('activa','activa'),
     ('morosa','morosa'),
-    ('inactiva','inactiva'),
-    ('pagada','cancelada'),
-    ('refinanciada','refinanciada')
+    ('cancelada','cancelada'),
+
 ]
 class Cuentas(models.Model):
     solicitante=models.ForeignKey(Clientes,null=True,blank=True,on_delete=models.CASCADE ,related_name='cliente_solicitante')
     garante1=models.ForeignKey(Clientes,null=True,blank=True,on_delete=models.CASCADE,related_name='garante1')
     garante2=models.ForeignKey(Clientes,null=True,blank=True,on_delete=models.CASCADE,related_name='garante2')
-
-    
     importe = models.FloatField(verbose_name="Total de la venta")
     fecha = models.DateField(verbose_name="Fecha y hora de la venta")
     numero_cuenta= models.CharField(max_length=30,verbose_name="Numero de cuenta")
@@ -34,6 +34,7 @@ class Cuentas(models.Model):
     anticipo=models.FloatField(default=0)
     metodo_pago=models.CharField(choices=metodos,max_length=20,default="contado")
     refinanciada=models.BooleanField(default=False)
+    descuento=models.FloatField(default=0)
     
     def __str__(self):
         return '{}'.format(self.numero_cuenta)
@@ -67,7 +68,7 @@ class Cuotas(models.Model):
     refinanciada=models.BooleanField(default=False)
     
     class Meta:
-        ordering= ('numero_cuota',)
+        ordering= ('id',)
 
     def __str__(self):
         return '{}'.format(self.numero_cuota)

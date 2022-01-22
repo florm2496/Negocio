@@ -8,6 +8,12 @@ class domicilioSerializer(serializers.ModelSerializer):
         model=Domicilio
         fields='__all__'
 
+
+class bajaSerializer(serializers.Serializer):
+    
+    id = serializers.IntegerField(required=True)
+    dni = serializers.CharField(required=True)
+
 class clientesSerializer(serializers.ModelSerializer):
     domicilio=domicilioSerializer()
     class Meta:
@@ -41,8 +47,7 @@ class clientesSerializer(serializers.ModelSerializer):
         
     
     def update(self,instance,validated_data):
-        print('en UPDATE')
-        # call model method for instance level computation
+  
         datos_domicilio=validated_data.pop('domicilio')
         clientes=Clientes.objects.all()
         
@@ -56,14 +61,5 @@ class clientesSerializer(serializers.ModelSerializer):
         Domicilio.objects.filter(pk=dom).update(**datos_domicilio)
         
         return cliente
-        # cliente=Clientes.objects.update(**validated_data)
     
-        # domicilio=Domicilio.objects.update(**datos_domicilio)
-        # call super to now save modified instance along with the validated data
-        #return super().update(instance, validated_data)  
-        # datos_domicilio=validated_data.pop('domicilio')
-        # cliente=Clientes.objects.create(**validated_data)
-    
-        # domicilio=Domicilio.objects.create(**datos_domicilio)
-        
 

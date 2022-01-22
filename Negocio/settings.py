@@ -1,12 +1,14 @@
 from pathlib import Path
-
+from django.core.management.utils import get_random_secret_key
+import os
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+ALLOWED_HOSTS = ['apimitienda.site','www.apimitienda.site']
 
-SECRET_KEY = 'django-insecure-c8^onvm@+^p*wqe$(&qqpfp1q2n$m^rgvcn*d%6=e99d@b2(i4'
+SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", get_random_secret_key())
 
-
+DEBUG = True
 
 # Application definition
 THRIDY_APPS=[
@@ -97,11 +99,13 @@ REST_FRAMEWORK={
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     )
 }
-DEBUG = True
 
-ALLOWED_HOSTS = ['*']
+
+
 
 APPEND_SLASH=False
+
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',

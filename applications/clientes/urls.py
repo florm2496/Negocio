@@ -2,12 +2,16 @@ from django.contrib import admin
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
-from . import views as clientes_views
+from .views import getClientesCuenta,clientesViewSet,bajaCliente
 
 
 router = DefaultRouter()
-router.register(r'', clientes_views.clientesViewSet, basename='clientes')
+router.register(r'',clientesViewSet, basename='clientes')
+
 urlpatterns = [
-    path('', include(router.urls)),
+    path('viewset/', include(router.urls)),
+    #path('apiclientes/<int:pk>',clienteAPIVIEW.as_view() ,name="cliente-apiview"),
+    path('getclientecuenta/',getClientesCuenta.as_view() ,name="cliente-cuenta"),
+    path('bajacliente/',bajaCliente.as_view(),name='baja-cliente')
     
 ]   
