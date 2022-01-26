@@ -56,7 +56,7 @@ def actualizar_estado_cuotas(cuentas):
 
                     cuota.vencida = True
 
-                    cuota.recargo = cuota.saldo * configs.recargo_interes
+                    cuota.recargo = cuota.saldo * (configs.recargo_interes/100)
 
                     cuota.estado = 'morosa'
 
