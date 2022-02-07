@@ -26,7 +26,7 @@ class Clientes(CommonFields):
 
     class Meta:
         unique_together = ['dni','apellido']
-        ordering = ['apellido']
+        # ordering = ['apellido']
     def __str__(self):
         
         return '{}-{}'.format(self.apellido,self.dni)

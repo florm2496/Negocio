@@ -29,16 +29,11 @@ class clientesSerializer(serializers.ModelSerializer):
         domicilio=Domicilio.objects.create(**datos_domicilio)
         
         cliente.domicilio=domicilio
-        
-        ultimo=Clientes.objects.all().last()
-        
-        if ultimo is None:
-            num=0
-        else:
-            num=ultimo.numero_cliente
-            
-        calc=int(num) + 1
-        cliente.numero_cliente=f'{calc}'
+
+        clientes=Clientes.objects.all()
+
+        num_cliente= clientes.count()
+        cliente.numero_cliente=f'{num_cliente}'
         
         cliente.save()
         
