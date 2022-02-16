@@ -436,7 +436,7 @@ class get_num_cuenta(APIView):
 
         if cuenta is None:
         
-            num_cuenta=0
+            num_cuenta=00310001
         else:
             num_cuenta=int(cuenta)+1
         return Response({'num_cuenta':num_cuenta})
@@ -454,8 +454,7 @@ class NuevoDetalleCuenta(APIView):
         serializer_class=serializers.DetalleCuentaSerializer(detalles,many=True)
         serializer=serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
-        print(serializer.data)
-
+    
         return Response({'datos':'datos'})
     
     
