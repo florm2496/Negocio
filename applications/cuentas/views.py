@@ -394,6 +394,7 @@ class NuevaCuenta(APIView):
             importe= serializer.data.get('importe'),
             fecha= dt.datetime.now(),
             numero_cuenta= num_cuenta,
+            aux_num_cuenta=num_cuenta[2:]
 
             #saldo = serializer.data.get('saldo'),
             #productos = serializer.data.get('productos'),
@@ -430,15 +431,25 @@ class NuevaCuenta(APIView):
 class get_num_cuenta(APIView):
 
     def get(self,request):
+        base = '00'
 
-        cuenta=Cuentas.objects.aggregate(max_num=Max('numero_cuenta'))
-        cuenta=cuenta['max_num']
-
-        if cuenta is None:
+        cuenta=Cuentas.objects.aggregate(max_num=Max('aux_num_cuenta'))
+        print('cuenta',cuenta['max_num'],type(cuenta['max_num']))
         
-            num_cuenta=00310001
+
+        if cuenta['max_num'] is None:
+            aux_num_cuenta=310001
+            num_cuenta=base + str(aux_num_cuenta)
         else:
-            num_cuenta=int(cuenta)+1
+
+            aux_num_cuenta=cuenta['max_num']
+            print(aux_num_cuenta)
+            aux_num_cuenta = aux_num_cuenta + 1
+            #cuenta=Cuentas.objects.get(aux_num_cuenta=aux_num_cuenta)
+            num_cuenta=base + str(aux_num_cuenta)
+
+
+        print('OKKK')
         return Response({'num_cuenta':num_cuenta})
 
 

@@ -27,7 +27,8 @@ class Cuentas(models.Model):
     garante2=models.ForeignKey(Clientes,null=True,blank=True,on_delete=models.CASCADE,related_name='garante2')
     importe = models.FloatField(verbose_name="Total de la venta")
     fecha = models.DateField(verbose_name="Fecha y hora de la venta")
-    numero_cuenta= models.CharField(max_length=30,verbose_name="Numero de cuenta")
+    aux_num_cuenta=models.IntegerField(verbose_name="Entero del numero de cuenta",default=0,unique=True)
+    numero_cuenta= models.CharField(max_length=30,verbose_name="Numero de cuenta",unique=True)
     saldo = models.FloatField(verbose_name="Saldo",default=0)
     estado = models.CharField(verbose_name='Estado',max_length=20,choices=estado, default="activa")
     baja = models.BooleanField(default=False)  # este campo es para dar de baja la cuenta
