@@ -387,7 +387,7 @@ class NuevaCuenta(APIView):
         solicitante=Clientes.objects.get(dni=int(solicitante_dni))
         garante=Clientes.objects.get(dni=int(garante_dni))
 
-¡
+
 
         cuenta=Cuentas(
             solicitante=solicitante,
@@ -434,23 +434,22 @@ class get_num_cuenta(APIView):
         base = '00'
 
         cuenta=Cuentas.objects.aggregate(max_num=Max('aux_num_cuenta'))
-¡
-        
+  
 
         if cuenta['max_num'] is None:
             aux_num_cuenta=310001
             num_cuenta=base + str(aux_num_cuenta)
         else:
-¡
+
             cuenta=Cuentas.objects.all().last()
- ¡
+
             
             aux_num_cuenta=cuenta.aux_num_cuenta
-¡
+
             aux_num_cuenta = aux_num_cuenta + 1
             
             num_cuenta=base + str(aux_num_cuenta)
-¡
+
         return Response({'num_cuenta':num_cuenta})
 
 
