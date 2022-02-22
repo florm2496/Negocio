@@ -196,7 +196,7 @@ class NuevaCuentaSerializer(serializers.Serializer):
     importe_cuota = serializers.FloatField(required=True)
     anticipo=serializers.FloatField(required=True)
     metodo_pago=serializers.CharField(required=True)
-    num_cuenta=serializers.IntegerField(required=True)
+    num_cuenta=serializers.CharField(required=True)
     descuento=serializers.FloatField(required=True)
     cantidades=CantidadesSerializer()
     productos=ProductosListSerializer()

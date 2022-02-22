@@ -134,7 +134,6 @@ class NuevoPago(APIView):
                         
                         cuota.saldo= cuota.saldo - cobrar   
 
-                        print('el pago es menor a la cuotota',cuota.saldo)
                         cuota.save()
 
                     pago_ste_cuota=Pagos(
@@ -275,6 +274,7 @@ class RegistrarCuenta(CreateAPIView):
             descuento=descuento,
             fecha= timezone.now(),
             numero_cuenta= num_cuenta,
+            aux_num_cuenta=num_cuenta[2:],
             metodo_pago=metodo_pago,
             saldo=importe_cuenta,
         )
@@ -327,7 +327,6 @@ class ReporteVentas(ListAPIView):
         cuenta=self.request.query_params.get('numero_cuenta')
         cuentas=Cuentas.objects.all()
         
-        print(cliente,cuenta)
         if cliente is None:
             queryset=cuentas
         else:
@@ -337,7 +336,7 @@ class ReporteVentas(ListAPIView):
             queryset=queryset.filter(numero_cuenta=cuenta)
         
         #serializer = ReporteCuentas(queryset, many=True)
-        print(queryset)
+
         return queryset
 
 
@@ -388,13 +387,14 @@ class NuevaCuenta(APIView):
         solicitante=Clientes.objects.get(dni=int(solicitante_dni))
         garante=Clientes.objects.get(dni=int(garante_dni))
 
+¡
+
         cuenta=Cuentas(
             solicitante=solicitante,
             garante= garante,
             importe= serializer.data.get('importe'),
             fecha= dt.datetime.now(),
-            numero_cuenta= num_cuenta,
-            aux_num_cuenta=num_cuenta[2:]
+            
 
             #saldo = serializer.data.get('saldo'),
             #productos = serializer.data.get('productos'),
@@ -434,22 +434,23 @@ class get_num_cuenta(APIView):
         base = '00'
 
         cuenta=Cuentas.objects.aggregate(max_num=Max('aux_num_cuenta'))
-        print('cuenta',cuenta['max_num'],type(cuenta['max_num']))
+¡
         
 
         if cuenta['max_num'] is None:
             aux_num_cuenta=310001
             num_cuenta=base + str(aux_num_cuenta)
         else:
-
-            aux_num_cuenta=cuenta['max_num']
-            print(aux_num_cuenta)
+¡
+            cuenta=Cuentas.objects.all().last()
+ ¡
+            
+            aux_num_cuenta=cuenta.aux_num_cuenta
+¡
             aux_num_cuenta = aux_num_cuenta + 1
-            #cuenta=Cuentas.objects.get(aux_num_cuenta=aux_num_cuenta)
+            
             num_cuenta=base + str(aux_num_cuenta)
-
-
-        print('OKKK')
+¡
         return Response({'num_cuenta':num_cuenta})
 
 
